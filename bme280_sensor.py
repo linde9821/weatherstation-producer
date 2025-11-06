@@ -73,7 +73,7 @@ if __name__ == '__main__':
     try:
         args = parse_arguments()
 
-        print('Starting weatherstation Producer\n')
+        print('Starting weatherstation producer\n')
         print('Connecting to bme280\n')
         port = 1
         address = 0x77  # Adafruit BME280 address. Other BME280s may be different
@@ -137,6 +137,6 @@ if __name__ == '__main__':
         if 'producer' in locals() and producer is not None:
             print("Closing Kafka producer...")
             producer.close()
-        if 'bus' in locals():
+        if 'bus' in locals() and bus is not None:
             bus.close()
         print("Shutdown complete.")
