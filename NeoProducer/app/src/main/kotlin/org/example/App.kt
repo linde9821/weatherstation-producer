@@ -3,6 +3,7 @@
  */
 package org.example
 
+import io.github.hapjava.accessories.HomekitAccessory
 import io.github.hapjava.server.impl.HomekitServer
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.runBlocking
@@ -17,7 +18,7 @@ class App(
 
     private lateinit var server: HomekitServer
     private lateinit var sensor: BME280Sensor
-    private val accessories = mutableListOf<BME280HomeKitSensor>()
+    private val accessories = mutableListOf<HomekitAccessory>()
 
     fun start() {
         // Initialize sensor
@@ -49,11 +50,14 @@ class App(
         )
 
         // Add accessories
-        val living = BME280HomeKitSensor(sensor, "Wohnzimmer", 17631299)
+        val dataService = BME280DataService(sensor)
+        val temperature = BME280TemperatureAccessory(sensor = dataService)
+        val humidity = BME280HumidityAccessory(sensor = dataService)
 
-        bridge.addAccessory(living)
+        bridge.addAccessory(temperature)
+        bridge.addAccessory(humidity)
 
-        accessories.addAll(listOf(living))
+        accessories.addAll(listOf(temperature, humidity))
 
         // Start
         bridge.start()
@@ -67,7 +71,6 @@ class App(
     }
 
     fun stop() {
-        accessories.forEach { it.close() }
         server.stop()
         sensor.close()
         println("✓ Stopped")
