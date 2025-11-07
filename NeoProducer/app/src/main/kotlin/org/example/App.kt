@@ -40,7 +40,7 @@ class App(
         // Create bridge
         val bridge = server.createBridge(
             authInfo,
-            "Temperature Bridge",
+            "Temperature, Humidity Bridge",
             1,
             "Scalangular",
             "TempBridge-v1",
