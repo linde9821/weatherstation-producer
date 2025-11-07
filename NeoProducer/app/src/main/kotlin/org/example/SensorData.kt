@@ -1,9 +1,11 @@
 package org.example
 
+import java.time.LocalDateTime
+
 data class SensorData(
     val temperature: Double,
     val humidity: Double,
     val pressure: Double,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: LocalDateTime = LocalDateTime.now()
 )
 

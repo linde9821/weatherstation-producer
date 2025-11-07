@@ -6,6 +6,7 @@ package org.example
 import io.github.hapjava.accessories.HomekitAccessory
 import io.github.hapjava.server.impl.HomekitServer
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.net.InetAddress
@@ -17,12 +18,13 @@ class App(
 ) {
 
     private lateinit var server: HomekitServer
-    private lateinit var sensor: BME280Sensor
+    private lateinit var dataService: DataService
     private val accessories = mutableListOf<HomekitAccessory>()
+    private val channel = Channel<SensorData>()
 
     fun start() {
         // Initialize sensor
-        sensor = BME280Sensor(address = 0x76, bus = 1)
+        val sensor = BME280Sensor(address = 0x76, bus = 1)
 
         // Setup storage
         val storageDir = File(System.getProperty("user.home") + "/.homekit")
@@ -50,9 +52,9 @@ class App(
         )
 
         // Add accessories
-        val dataService = BME280DataService(sensor)
-        val temperature = BME280TemperatureAccessory(sensor = dataService)
-        val humidity = BME280HumidityAccessory(sensor = dataService)
+        dataService = DataService(sensor, channel)
+        val temperature = BME280TemperatureAccessory(channel = channel)
+        val humidity = BME280HumidityAccessory(channel = channel)
 
         bridge.addAccessory(temperature)
         bridge.addAccessory(humidity)
@@ -61,6 +63,7 @@ class App(
 
         // Start
         bridge.start()
+        dataService.start()
 
         println("HomeKit Bridge gestartet")
         println("PIN: $pin")
@@ -72,7 +75,7 @@ class App(
 
     fun stop() {
         server.stop()
-        sensor.close()
+        dataService.close()
         println("✓ Stopped")
     }
 }
