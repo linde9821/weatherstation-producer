@@ -38,6 +38,7 @@ class BME280HomeKitSensor(
     init {
         scope.launch {
             while (run.load()) {
+                println("reading")
                 val newData = sensor.readSample()
 
                 println("Timestamp: ${newData.timestamp}")
@@ -49,9 +50,10 @@ class BME280HomeKitSensor(
                 mutex.withLock {
                     if (newData.temperature != currentData.temperature) temperatureCallback?.changed()
                     currentData = newData
+                    println("new data writtem")
                 }
 
-                delay(5000)
+                delay(2000)
             }
         }
     }
@@ -91,6 +93,7 @@ class BME280HomeKitSensor(
     }
 
     override fun getCurrentTemperature(): CompletableFuture<Double> {
+        println("Latest temperature data requested")
         return scope.async {
             mutex.withLock {
                 currentData.temperature
@@ -101,6 +104,7 @@ class BME280HomeKitSensor(
     override fun subscribeCurrentTemperature(callback: HomekitCharacteristicChangeCallback) {
         scope.launch {
             mutex.withLock {
+                println("subscribeCurrentTemperature set")
                 temperatureCallback = callback
             }
         }
@@ -109,6 +113,7 @@ class BME280HomeKitSensor(
     override fun unsubscribeCurrentTemperature() {
         scope.launch {
             mutex.withLock {
+                println("subscribeCurrentTemperature unset")
                 temperatureCallback = null
             }
         }
