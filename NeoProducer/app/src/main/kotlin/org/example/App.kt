@@ -6,10 +6,10 @@ package org.example
 fun main() {
     println("Starting")
 
-    BME280Sensor(address = 0x77, bus = 1).use {
+    BME280Sensor(address = 0x76, bus = 1).use { sensor ->
         while (true) {
             try {
-                val data = BME280Sensor(address = 0x77, bus = 1).readSample()
+                val data = sensor.readSample()
                 println("Timestamp: ${data.timestamp}")
                 println("Temperature: ${"%.2f".format(data.temperature)}°C")
                 println("Humidity: ${"%.2f".format(data.humidity)}%")
