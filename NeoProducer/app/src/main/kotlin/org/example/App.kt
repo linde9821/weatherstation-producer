@@ -3,25 +3,94 @@
  */
 package org.example
 
-fun main() {
-    println("Starting")
+import io.github.hapjava.server.impl.HomekitServer
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.runBlocking
+import java.io.File
+import java.net.InetAddress
+import kotlin.coroutines.cancellation.CancellationException
 
-    BME280Sensor(address = 0x76, bus = 1).use { sensor ->
-        while (true) {
-            try {
-                val data = sensor.readSample()
-                println("Timestamp: ${data.timestamp}")
-                println("Temperature: ${"%.2f".format(data.temperature)}°C")
-                println("Humidity: ${"%.2f".format(data.humidity)}%")
-                println("Pressure: ${"%.2f".format(data.pressure)} Pa")
-                println("---")
-            } catch (e: InterruptedException) {
-                println("Shutting down...")
-            } catch (e: Exception) {
-                println("Error: ${e.message}")
-            }
+class App(
+    private val ipAddress: String,
+    private val pin: String = "011-71-531"
+) {
 
-            Thread.sleep(1000)
-        }
+    private lateinit var server: HomekitServer
+    private lateinit var sensor: BME280Sensor
+    private val accessories = mutableListOf<BME280HomeKitSensor>()
+
+    fun start() {
+        // Initialize sensor
+        sensor = BME280Sensor(address = 0x76, bus = 1)
+
+        // Setup storage
+        val storageDir = File(System.getProperty("user.home") + "/.homekit")
+        storageDir.mkdirs()
+
+        // Create auth
+        val authInfo = FileBasedHomekitAuthInfo(
+            storageFile = File(storageDir, "auth.properties"),
+            pin = pin
+        )
+
+        // Create server
+        server = HomekitServer(InetAddress.getByName(ipAddress), 9123)
+
+        // Create bridge
+        val bridge = server.createBridge(
+            authInfo,
+            "Temperature Bridge",
+            1,
+            "Scalangular",
+            "TempBridge-v1",
+            "TB-001",
+            "0.0.1",
+            "1.0"
+        )
+
+        // Add accessories
+        val living = BME280HomeKitSensor(sensor, "Wohnzimmer", 17631299)
+
+        bridge.addAccessory(living)
+
+        accessories.addAll(listOf(living))
+
+        // Start
+        bridge.start()
+
+        println("HomeKit Bridge gestartet")
+        println("PIN: $pin")
+        println("IP: $ipAddress:9123")
+        println("Räume: ${accessories.size}")
+
+        Runtime.getRuntime().addShutdownHook(Thread { stop() })
+    }
+
+    fun stop() {
+        accessories.forEach { it.close() }
+        server.stop()
+        sensor.close()
+        println("✓ Stopped")
     }
 }
+
+fun main() = runBlocking {
+    val app = App(
+        ipAddress = "192.168.2.182",
+    )
+
+    app.start()
+
+    Runtime.getRuntime().addShutdownHook(Thread {
+        app.stop()
+    })
+
+    println("Press Ctrl+C to stop")
+
+    try {
+        awaitCancellation()  // Suspends forever until cancelled
+    } catch (_: CancellationException) {
+        println("Shutting down...")
+    }
+}
+

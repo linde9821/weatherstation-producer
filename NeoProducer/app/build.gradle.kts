@@ -29,6 +29,8 @@ dependencies {
 
     implementation("com.pi4j:pi4j-core:3.0.3")
     implementation("com.pi4j:pi4j-plugin-linuxfs:3.0.3")  // For I2C support
+    implementation("io.github.hap-java:hap:2.0.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
