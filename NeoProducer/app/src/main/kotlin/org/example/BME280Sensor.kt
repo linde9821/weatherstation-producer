@@ -92,9 +92,15 @@ class BME280Sensor(
     }
 
     private fun configure() {
-        device.writeRegister(0xF2, 0x05.toByte()) // Humidity: 16x (weather needs accuracy)
-        device.writeRegister(0xF4, 0xB7.toByte()) // Temp/Press: 16x, Normal mode
-        device.writeRegister(0xF5, 0xD4.toByte()) // Standby: 1s, Filter: 16x
+        // Humidity: 1x oversampling (faster)
+        device.writeRegister(0xF2, 0x01.toByte())
+
+        // Temp: 1x, Press: 1x, Normal mode
+        device.writeRegister(0xF4, 0x27.toByte())
+
+        // Standby: 0.5ms, Filter: 2x (light filtering)
+        device.writeRegister(0xF5, 0x04.toByte())
+
         Thread.sleep(100)
     }
 

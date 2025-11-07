@@ -19,6 +19,7 @@ import java.lang.AutoCloseable
 import java.util.concurrent.CompletableFuture
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.math.abs
 
 @OptIn(ExperimentalAtomicApi::class)
 class BME280HomeKitSensor(
@@ -48,7 +49,11 @@ class BME280HomeKitSensor(
                 println("---")
 
                 mutex.withLock {
-                    if (newData.temperature != currentData.temperature) temperatureCallback?.changed()
+                    if (abs(newData.temperature - currentData.temperature) >= 0.2){
+                        temperatureCallback?.changed()?.also {
+                            println("notified due to change")
+                        }
+                    }
                     currentData = newData
                     println("new data writtem")
                 }
