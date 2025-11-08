@@ -8,12 +8,6 @@ repositories {
 }
 
 dependencies {
-
-    // Use JUnit Jupiter for testing.
-    testImplementation(libs.junit.jupiter)
-
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
     implementation("com.pi4j:pi4j-core:3.0.3")
     implementation("com.pi4j:pi4j-plugin-linuxfs:3.0.3")
     implementation("io.github.hap-java:hap:2.0.7")
@@ -49,6 +43,9 @@ application {
         // String optimization
         "-XX:+UseStringDeduplication",
         "-XX:StringDeduplicationAgeThreshold=3",
+        "-Djava.awt.headless=true",
+        "-Xverify:none",  // Skip bytecode verification (faster, slightly less safe)
+
 
         // Network and system
         "-Djava.net.preferIPv4Stack=true",
