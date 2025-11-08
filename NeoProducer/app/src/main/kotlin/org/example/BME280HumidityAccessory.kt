@@ -77,6 +77,7 @@ class BME280HumidityAccessory(
     override fun getCurrentRelativeHumidity(): CompletableFuture<Double> {
         println("Latest RelativeHumidity data requested")
         return scope.async {
+            lastReadData = latestData
             latestData.humidity
         }.asCompletableFuture()
     }
