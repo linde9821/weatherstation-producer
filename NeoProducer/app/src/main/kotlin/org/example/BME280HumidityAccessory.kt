@@ -4,11 +4,15 @@ import io.github.hapjava.accessories.HumiditySensorAccessory
 import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
@@ -16,24 +20,33 @@ class BME280HumidityAccessory(
     private val id: Int = 17631277,
     private val label: String = "Humidity Sensor",
     private val channel: Channel<SensorData>
-) : HumiditySensorAccessory {
+) : HumiditySensorAccessory, AutoCloseable {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var latestData = SensorData(0.0, 0.0, 0.0)
     private var lastReadData = SensorData(0.0, 0.0, 0.0)
     private var characteristicCallback: HomekitCharacteristicChangeCallback? = null
 
+
     init {
         scope.launch {
-            while (true) {
-                latestData = channel.receive()
+            try {
+                for (data in channel) {
+                    latestData = data
 
-                if (abs(lastReadData.humidity - latestData.humidity) > 0.2) characteristicCallback?.changed()?.also {
-                    println("Call characteristicCallback for $label")
+                    if (characteristicCallback != null &&
+                        abs(lastReadData.humidity - latestData.humidity) > 0.2
+                    ) {
+                        println("Call characteristicCallback for $label")
+                        characteristicCallback?.changed()
+                    }
                 }
+            } catch (e: ClosedReceiveChannelException) {
+                println("Channel closed for $label")
             }
         }
     }
+
 
     override fun getId(): Int = id
 
@@ -58,7 +71,7 @@ class BME280HumidityAccessory(
     }
 
     override fun getFirmwareRevision(): CompletableFuture<String> {
-        return scope.async { "0.0.1" }.asCompletableFuture()
+        return scope.async { "1.0.0" }.asCompletableFuture()
     }
 
     override fun getCurrentRelativeHumidity(): CompletableFuture<Double> {
@@ -74,5 +87,13 @@ class BME280HumidityAccessory(
 
     override fun unsubscribeCurrentRelativeHumidity() {
         characteristicCallback = null
+    }
+
+    override fun close() {
+        scope.cancel()
+        runBlocking {
+            scope.coroutineContext[Job]?.join()
+        }
+        channel.close()
     }
 }

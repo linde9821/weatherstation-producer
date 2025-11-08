@@ -4,11 +4,16 @@ import io.github.hapjava.accessories.TemperatureSensorAccessory
 import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.lang.AutoCloseable
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
@@ -16,7 +21,7 @@ class BME280TemperatureAccessory(
     private val id: Int = 17631299,
     private val label: String = "Temperature Sensor",
     private val channel: Channel<SensorData>
-) : TemperatureSensorAccessory {
+) : TemperatureSensorAccessory, AutoCloseable {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var latestData = SensorData(0.0, 0.0, 0.0)
@@ -25,12 +30,19 @@ class BME280TemperatureAccessory(
 
     init {
         scope.launch {
-            while (true) {
-                latestData = channel.receive()
+            try {
+                for (data in channel) {
+                    latestData = data
 
-                if (abs(lastReadData.temperature - latestData.temperature) > 0.2) characteristicCallback?.changed()?.also {
-                    println("Call characteristicCallback for $label")
+                    if (characteristicCallback != null &&
+                        abs(lastReadData.temperature - latestData.temperature) > 0.2
+                    ) {
+                        println("Call characteristicCallback for $label")
+                        characteristicCallback?.changed()
+                    }
                 }
+            } catch (e: ClosedReceiveChannelException) {
+                println("Channel closed for $label")
             }
         }
     }
@@ -58,7 +70,7 @@ class BME280TemperatureAccessory(
     }
 
     override fun getFirmwareRevision(): CompletableFuture<String> {
-        return scope.async { "0.0.1" }.asCompletableFuture()
+        return scope.async { "1.0.0" }.asCompletableFuture()
     }
 
     override fun getCurrentTemperature(): CompletableFuture<Double> {
@@ -76,5 +88,13 @@ class BME280TemperatureAccessory(
 
     override fun unsubscribeCurrentTemperature() {
         characteristicCallback = null
+    }
+
+    override fun close() {
+        scope.cancel()
+        runBlocking {
+            scope.coroutineContext[Job]?.join()
+        }
+        channel.close()
     }
 }

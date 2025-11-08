@@ -47,7 +47,7 @@ class App(
             "Scalangular",
             "TempBridge-v1",
             "TB-001",
-            "0.0.1",
+            "1.0.0",
             "1.0"
         )
 
@@ -68,7 +68,6 @@ class App(
         println("HomeKit Bridge gestartet")
         println("PIN: $pin")
         println("IP: $ipAddress:9123")
-        println("Räume: ${accessories.size}")
 
         Runtime.getRuntime().addShutdownHook(Thread { stop() })
     }
@@ -94,7 +93,7 @@ fun main() = runBlocking {
     println("Press Ctrl+C to stop")
 
     try {
-        awaitCancellation()  // Suspends forever until cancelled
+        awaitCancellation()
     } catch (_: CancellationException) {
         println("Shutting down...")
     }

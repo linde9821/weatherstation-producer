@@ -35,9 +35,7 @@ class FileBasedHomekitAuthInfo(
         }
 
         // Initialize or load MAC
-        _mac = mac ?: props.getProperty("mac")?.also {
-            // Already exists
-        } ?: HomekitServer.generateMac().also {
+        _mac = mac ?: props.getProperty("mac") ?: HomekitServer.generateMac().also {
             props.setProperty("mac", it)
             save()
         }
