@@ -4,20 +4,16 @@ import com.pi4j.Pi4J
 import com.pi4j.io.i2c.I2C
 import com.pi4j.io.i2c.I2CConfig
 import com.pi4j.io.i2c.I2CProvider
-import kotlin.and
-import kotlin.compareTo
-import kotlin.or
-import kotlin.shl
-import kotlin.shr
-import kotlin.text.toInt
-import kotlin.text.toLong
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class BME280Sensor(
     private val address: Int = 0x77,
     private val bus: Int = 1
-): AutoCloseable {
+) : AutoCloseable {
     private val pi4j = Pi4J.newAutoContext()
     private val device: I2C
+
+    private val logger = KotlinLogging.logger { }
 
     // Calibration parameters
     private var digT1: Int = 0
@@ -41,7 +37,7 @@ class BME280Sensor(
     private var tFine: Int = 0
 
     init {
-        println("Initializing BME280 sensor...")
+        logger.info { "Initializing BME280 sensor..." }
 
         // Create I2C config
         val config: I2CConfig = I2C.newConfigBuilder(pi4j)
@@ -57,7 +53,7 @@ class BME280Sensor(
         loadCalibrationParams()
         configure()
 
-        println("BME280 sensor initialized successfully")
+        logger.info { "BME280 sensor initialized successfully" }
     }
 
     private fun loadCalibrationParams() {
@@ -192,6 +188,6 @@ class BME280Sensor(
 
     override fun close() {
         pi4j.shutdown()
-        println("BME280 sensor closed")
+        logger.info { "BME280 sensor closed" }
     }
 }

@@ -5,6 +5,7 @@ package org.example
 
 import io.github.hapjava.accessories.HomekitAccessory
 import io.github.hapjava.server.impl.HomekitServer
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
@@ -16,6 +17,8 @@ class App(
     private val ipAddress: String,
     private val pin: String = "011-71-531"
 ) {
+
+    private val logger = KotlinLogging.logger { }
 
     private lateinit var server: HomekitServer
     private lateinit var dataService: DataService
@@ -47,7 +50,7 @@ class App(
             "Scalangular",
             "TempBridge-v1",
             "TB-001",
-            "1.0.0",
+            "1.0.1",
             "1.0"
         )
 
@@ -62,12 +65,12 @@ class App(
         accessories.addAll(listOf(temperature, humidity))
 
         // Start
-        bridge.start()
         dataService.start()
+        bridge.start()
 
-        println("HomeKit Bridge gestartet")
-        println("PIN: $pin")
-        println("IP: $ipAddress:9123")
+        logger.info { "HomeKit Bridge gestartet" }
+        logger.info { "PIN: $pin" }
+        logger.info { "IP: $ipAddress:9123" }
 
         Runtime.getRuntime().addShutdownHook(Thread { stop() })
     }
@@ -75,11 +78,14 @@ class App(
     fun stop() {
         server.stop()
         dataService.close()
-        println("✓ Stopped")
+        logger.info { "Stopped" }
     }
 }
 
 fun main() = runBlocking {
+
+    val logger = KotlinLogging.logger { }
+
     val app = App(
         ipAddress = "192.168.2.182",
     )
@@ -90,12 +96,12 @@ fun main() = runBlocking {
         app.stop()
     })
 
-    println("Press Ctrl+C to stop")
+    logger.info { "Press Ctrl+C to stop" }
 
     try {
         awaitCancellation()
     } catch (_: CancellationException) {
-        println("Shutting down...")
+        logger.info { "Shutting down..." }
     }
 }
 

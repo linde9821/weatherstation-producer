@@ -8,10 +8,12 @@ repositories {
 }
 
 dependencies {
-    implementation("com.pi4j:pi4j-core:3.0.3")
-    implementation("com.pi4j:pi4j-plugin-linuxfs:3.0.3")
-    implementation("io.github.hap-java:hap:2.0.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation(libs.pi4j.core)
+    implementation(libs.pi4j.plugin.linuxfs)
+    implementation(libs.hap.java)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlin.logging)
+    implementation(libs.slf4j.simple)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

@@ -1,2 +1,17 @@
+[versions]
+pi4j = "3.0.3"
+hap-java = "2.0.7"
+kotlinx-coroutines = "1.10.2"
+kotlin-logging = "7.0.0"
+slf4j = "2.0.16"
+
+[libraries]
+pi4j-core = { module = "com.pi4j:pi4j-core", version.ref = "pi4j" }
+pi4j-plugin-linuxfs = { module = "com.pi4j:pi4j-plugin-linuxfs", version.ref = "pi4j" }
+hap-java = { module = "io.github.hap-java:hap", version.ref = "hap-java" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.20" }

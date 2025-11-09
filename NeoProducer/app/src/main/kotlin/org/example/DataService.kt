@@ -1,19 +1,17 @@
 package org.example
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.lang.AutoCloseable
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 
 class DataService(
@@ -24,16 +22,18 @@ class DataService(
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    private val logger = KotlinLogging.logger { }
+
     fun start() {
         scope.launch {
             while (isActive) {
                 val data = sensor.readSample()
 
-                println("Timestamp: ${data.timestamp}")
-                println("Temperature: ${"%.2f".format(data.temperature)}°C")
-                println("Humidity: ${"%.2f".format(data.humidity)}%")
-                println("Pressure: ${"%.2f".format(data.pressure)} Pa")
-                println("---")
+                logger.info { "Timestamp: ${data.timestamp}" }
+                logger.info { "Temperature: ${"%.2f".format(data.temperature)}°C" }
+                logger.info { "Humidity: ${"%.2f".format(data.humidity)}%" }
+                logger.info { "Pressure: ${"%.2f".format(data.pressure)} Pa" }
+                logger.info { "---" }
 
                 updateChannel.send(data)
                 delay(interval)
