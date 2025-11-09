@@ -87,7 +87,7 @@ fun main() = runBlocking {
     val logger = KotlinLogging.logger { }
 
     val app = App(
-        ipAddress = "192.168.2.182",
+        ipAddress = "192.168.2.171",
     )
 
     app.start()
