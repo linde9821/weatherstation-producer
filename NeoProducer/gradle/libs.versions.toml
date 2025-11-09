@@ -2,8 +2,8 @@
 pi4j = "3.0.3"
 hap-java = "2.0.7"
 kotlinx-coroutines = "1.10.2"
-kotlin-logging = "7.0.0"
-slf4j = "2.0.16"
+kotlin-logging = "7.0.13"
+slf4j = "2.0.17"
 
 [libraries]
 pi4j-core = { module = "com.pi4j:pi4j-core", version.ref = "pi4j" }

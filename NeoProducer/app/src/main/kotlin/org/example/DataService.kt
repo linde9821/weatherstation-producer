@@ -12,6 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.lang.AutoCloseable
+import java.time.format.DateTimeFormatter
 
 
 class DataService(
@@ -23,17 +24,21 @@ class DataService(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val logger = KotlinLogging.logger { }
+    private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
     fun start() {
         scope.launch {
             while (isActive) {
                 val data = sensor.readSample()
 
-                logger.info { "Timestamp: ${data.timestamp}" }
-                logger.info { "Temperature: ${"%.2f".format(data.temperature)}°C" }
-                logger.info { "Humidity: ${"%.2f".format(data.humidity)}%" }
-                logger.info { "Pressure: ${"%.2f".format(data.pressure)} Pa" }
-                logger.info { "---" }
+                val status = buildString {
+                    appendLine("Timestamp: ${formatter.format(data.timestamp)}")
+                    appendLine("Temperature: ${"%.2f".format(data.temperature)}°C")
+                    appendLine("Humidity: ${"%.2f".format(data.humidity)}%")
+                    appendLine("Pressure: ${"%.2f".format(data.pressure)} Pa\n")
+                }
+
+                logger.info { status }
 
                 updateChannel.send(data)
                 delay(interval)
