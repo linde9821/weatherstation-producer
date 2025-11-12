@@ -14,4 +14,4 @@ kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = 
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.20" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.21" }
