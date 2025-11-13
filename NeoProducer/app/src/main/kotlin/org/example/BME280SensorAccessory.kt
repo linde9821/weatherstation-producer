@@ -30,8 +30,10 @@ abstract class BME280SensorAccessory<T>(
 
     @Volatile
     protected var latestData = SensorData(0.0, 0.0, 0.0)
+
     @Volatile
     protected var lastReadData = SensorData(0.0, 0.0, 0.0)
+
     @Volatile
     protected var characteristicCallback: HomekitCharacteristicChangeCallback? = null
 

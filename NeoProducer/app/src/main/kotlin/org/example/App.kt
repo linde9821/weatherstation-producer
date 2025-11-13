@@ -3,10 +3,8 @@
  */
 package org.example
 
-import io.github.hapjava.accessories.HomekitAccessory
 import io.github.hapjava.server.impl.HomekitServer
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
@@ -22,12 +20,12 @@ class App(
     private val logger = KotlinLogging.logger { }
     private lateinit var server: HomekitServer
     private lateinit var dataService: DataService
-    private val accessories = mutableListOf<HomekitAccessory>()
+    private val accessories = mutableListOf<BME280SensorAccessory<*>>()
     private val channel = Channel<SensorData>(capacity = Channel.CONFLATED)
 
     fun start() {
         logger.info { "Starting HomeKit Bridge initialization..." }
-        
+
         try {
             // Initialize sensor
             val address = 0x76
@@ -90,9 +88,6 @@ class App(
             logger.info { "PIN: $pin" }
             logger.info { "IP: $ipAddress:9123" }
             logger.info { "Bridge is ready for HomeKit pairing" }
-
-            Runtime.getRuntime().addShutdownHook(Thread { stop() })
-            
         } catch (e: Exception) {
             logger.error(e) { "Failed to start HomeKit Bridge" }
             throw e
@@ -101,45 +96,40 @@ class App(
 
     fun stop() {
         logger.info { "Shutting down HomeKit Bridge..." }
-        
-        try {
-            logger.debug { "Stopping HomeKit server" }
-            server.stop()
-            logger.info { "HomeKit server stopped" }
-            
-            logger.debug { "Closing data service" }
-            dataService.close()
-            logger.info { "Data service closed" }
 
+        try {
+            accessories.forEach { it.close() }
+            server.stop()
+            dataService.close()
             channel.close()
 
-            logger.info { "HomeKit Bridge shutdown complete" }
+            logger.info { "shutdown complete" }
         } catch (e: Exception) {
             logger.error(e) { "Error during shutdown" }
         }
     }
 }
 
-fun main() = runBlocking(Dispatchers.IO) {
+fun main() = runBlocking {
     val logger = KotlinLogging.logger { }
-    
+
     logger.info { "Starting HomeKit Temperature/Humidity Bridge" }
-    
+
     try {
         val app = App(ipAddress = "192.168.2.171")
-        
+
         logger.debug { "Starting application" }
         app.start()
-        
+
         Runtime.getRuntime().addShutdownHook(Thread {
             logger.info { "Shutdown hook triggered" }
             app.stop()
         })
-        
+
         logger.info { "Application started successfully. Press Ctrl+C to stop" }
-        
+
         awaitCancellation()
-        
+
     } catch (_: CancellationException) {
         logger.info { "Application cancelled, shutting down..." }
     } catch (e: Exception) {
