@@ -26,82 +26,123 @@ class App(
     private val channel = Channel<SensorData>()
 
     fun start() {
-        // Initialize sensor
-        val sensor = BME280Sensor(address = 0x76, bus = 1)
+        logger.info { "Starting HomeKit Bridge initialization..." }
+        
+        try {
+            // Initialize sensor
+            val address = 0x76
+            val bus = 1
+            logger.debug { "Initializing BME280 sensor (address=$address, bus=$bus)" }
+            val sensor = BME280Sensor(address = address, bus = bus)
+            logger.info { "BME280 sensor initialized successfully" }
 
-        // Setup storage
-        val storageDir = File(System.getProperty("user.home") + "/.homekit")
-        storageDir.mkdirs()
+            // Setup storage
+            val storageDir = File(System.getProperty("user.home") + "/.homekit")
+            logger.debug { "Creating storage directory: ${storageDir.absolutePath}" }
+            storageDir.mkdirs()
+            logger.info { "Storage directory ready" }
 
-        // Create auth
-        val authInfo = FileBasedHomekitAuthInfo(
-            storageFile = File(storageDir, "auth.properties"),
-            pin = pin
-        )
+            // Create auth
+            logger.debug { "Setting up HomeKit authentication" }
+            val authInfo = FileBasedHomekitAuthInfo(
+                storageFile = File(storageDir, "auth.properties"),
+                pin = pin
+            )
+            logger.info { "Authentication configured" }
 
-        // Create server
-        server = HomekitServer(InetAddress.getByName(ipAddress), 9123)
+            // Create server
+            logger.debug { "Creating HomeKit server on $ipAddress:9123" }
+            server = HomekitServer(InetAddress.getByName(ipAddress), 9123)
+            logger.info { "HomeKit server created" }
 
-        // Create bridge
-        val bridge = server.createBridge(
-            authInfo,
-            "Temperature, Humidity Bridge",
-            1,
-            "Scalangular",
-            "TempBridge-v1",
-            "TB-001",
-            "1.0.1",
-            "1.0"
-        )
+            // Create bridge
+            logger.debug { "Creating HomeKit bridge" }
+            val bridge = server.createBridge(
+                authInfo,
+                "Temperature, Humidity Bridge",
+                1,
+                "Scalangular",
+                "TempBridge-v1",
+                "TB-001",
+                "1.0.1",
+                "1.0"
+            )
+            logger.info { "HomeKit bridge created" }
 
-        // Add accessories
-        dataService = DataService(sensor, channel)
-        val temperature = BME280TemperatureAccessory(channel = channel)
-        val humidity = BME280HumidityAccessory(channel = channel)
+            // Add accessories
+            logger.debug { "Initializing accessories" }
+            dataService = DataService(sensor, channel)
+            val temperature = BME280TemperatureAccessory(channel = channel)
+            val humidity = BME280HumidityAccessory(channel = channel)
 
-        bridge.addAccessory(temperature)
-        bridge.addAccessory(humidity)
+            bridge.addAccessory(temperature)
+            bridge.addAccessory(humidity)
+            accessories.addAll(listOf(temperature, humidity))
+            logger.info { "Added ${accessories.size} accessories to bridge" }
 
-        accessories.addAll(listOf(temperature, humidity))
+            // Start services
+            logger.debug { "Starting data service" }
+            dataService.start()
+            logger.debug { "Starting HomeKit bridge" }
+            bridge.start()
 
-        // Start
-        dataService.start()
-        bridge.start()
+            logger.info { "HomeKit Bridge started successfully" }
+            logger.info { "PIN: $pin" }
+            logger.info { "IP: $ipAddress:9123" }
+            logger.info { "Bridge is ready for HomeKit pairing" }
 
-        logger.info { "HomeKit Bridge gestartet" }
-        logger.info { "PIN: $pin" }
-        logger.info { "IP: $ipAddress:9123" }
-
-        Runtime.getRuntime().addShutdownHook(Thread { stop() })
+            Runtime.getRuntime().addShutdownHook(Thread { stop() })
+            
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to start HomeKit Bridge" }
+            throw e
+        }
     }
 
     fun stop() {
-        server.stop()
-        dataService.close()
-        logger.info { "Stopped" }
+        logger.info { "Shutting down HomeKit Bridge..." }
+        
+        try {
+            logger.debug { "Stopping HomeKit server" }
+            server.stop()
+            logger.info { "HomeKit server stopped" }
+            
+            logger.debug { "Closing data service" }
+            dataService.close()
+            logger.info { "Data service closed" }
+            
+            logger.info { "HomeKit Bridge shutdown complete" }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during shutdown" }
+        }
     }
 }
 
 fun main() = runBlocking {
-
     val logger = KotlinLogging.logger { }
-
-    val app = App(
-        ipAddress = "192.168.2.171",
-    )
-
-    app.start()
-
-    Runtime.getRuntime().addShutdownHook(Thread {
-        app.stop()
-    })
-
-    logger.info { "Press Ctrl+C to stop" }
-
+    
+    logger.info { "Starting HomeKit Temperature/Humidity Bridge" }
+    
     try {
+        val app = App(ipAddress = "192.168.2.171")
+        
+        logger.debug { "Starting application" }
+        app.start()
+        
+        Runtime.getRuntime().addShutdownHook(Thread {
+            logger.info { "Shutdown hook triggered" }
+            app.stop()
+        })
+        
+        logger.info { "Application started successfully. Press Ctrl+C to stop" }
+        
         awaitCancellation()
+        
     } catch (_: CancellationException) {
-        logger.info { "Shutting down..." }
+        logger.info { "Application cancelled, shutting down..." }
+    } catch (e: Exception) {
+        logger.error(e) { "Application failed to start" }
+        throw e
     }
 }
 

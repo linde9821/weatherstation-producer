@@ -13,12 +13,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.lang.AutoCloseable
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 
 class DataService(
     private val sensor: BME280Sensor,
     private val updateChannel: Channel<SensorData>,
-    private val interval: Long = 5000L
+    private val interval: Duration = 30.seconds
 ) : AutoCloseable {
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -41,6 +43,7 @@ class DataService(
                 logger.info { status }
 
                 updateChannel.send(data)
+                logger.info { "Waiting $interval before next measurement" }
                 delay(interval)
             }
         }
