@@ -62,7 +62,7 @@ class App(
                 "Scalangular",
                 "TempBridge-v1",
                 "TB-001",
-                "1.0.1",
+                "1.0.2",
                 "1.0"
             )
             logger.info { "HomeKit bridge created" }

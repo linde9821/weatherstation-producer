@@ -82,7 +82,7 @@ abstract class BME280SensorAccessory<T>(
     }
 
     open fun getFirmwareRevision(): CompletableFuture<String> {
-        return scope.async { "1.0.0" }.asCompletableFuture()
+        return scope.async { "1.0.1" }.asCompletableFuture()
     }
 
     protected fun getCurrentValue(): CompletableFuture<Double> {
