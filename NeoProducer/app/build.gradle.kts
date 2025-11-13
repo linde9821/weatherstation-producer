@@ -34,9 +34,7 @@ application {
         "-Xms64m",
 
         // Garbage Collection
-        "-XX:+UseSerialGC",
-        "-XX:MaxGCPauseMillis=100",
-        "-XX:GCTimeRatio=19",
+        "-XX:+UseG1GC",
 
         // JIT Compilation
         "-XX:+TieredCompilation",
@@ -47,7 +45,6 @@ application {
         "-XX:StringDeduplicationAgeThreshold=3",
         "-Djava.awt.headless=true",
         "-Xverify:none",  // Skip bytecode verification (faster, slightly less safe)
-
 
         // Network and system
         "-Djava.net.preferIPv4Stack=true",
