@@ -1,4 +1,4 @@
-package org.example
+package com.scalangular.sensor
 
 import java.time.LocalDateTime
 
@@ -8,4 +8,3 @@ data class SensorData(
     val pressure: Double,
     val timestamp: LocalDateTime = LocalDateTime.now()
 )
-

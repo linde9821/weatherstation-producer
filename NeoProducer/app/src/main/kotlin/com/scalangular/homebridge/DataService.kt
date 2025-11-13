@@ -1,5 +1,7 @@
-package org.example
+package com.scalangular.homebridge
 
+import com.scalangular.sensor.BME280Sensor
+import com.scalangular.sensor.SensorData
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.lang.AutoCloseable
 import java.time.format.DateTimeFormatter
+import kotlin.text.format
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 

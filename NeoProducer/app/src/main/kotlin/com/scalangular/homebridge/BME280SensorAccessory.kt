@@ -1,5 +1,6 @@
-package org.example
+package com.scalangular.homebridge
 
+import com.scalangular.sensor.SensorData
 import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineName

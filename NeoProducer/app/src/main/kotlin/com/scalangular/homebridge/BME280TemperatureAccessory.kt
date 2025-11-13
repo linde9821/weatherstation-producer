@@ -1,5 +1,6 @@
-package org.example
+package com.scalangular.homebridge
 
+import com.scalangular.sensor.SensorData
 import io.github.hapjava.accessories.TemperatureSensorAccessory
 import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback
 import kotlinx.coroutines.channels.Channel

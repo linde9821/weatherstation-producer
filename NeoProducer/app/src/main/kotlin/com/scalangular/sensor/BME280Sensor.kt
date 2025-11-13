@@ -1,9 +1,10 @@
-package org.example
+package com.scalangular.sensor
 
 import com.pi4j.Pi4J
 import com.pi4j.io.i2c.I2C
 import com.pi4j.io.i2c.I2CConfig
 import com.pi4j.io.i2c.I2CProvider
+import com.scalangular.sensor.SensorData
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class BME280Sensor(

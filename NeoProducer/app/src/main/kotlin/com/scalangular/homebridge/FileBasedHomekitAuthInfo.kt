@@ -1,4 +1,4 @@
-package org.example
+package com.scalangular.homebridge
 
 import io.github.hapjava.server.HomekitAuthInfo
 import io.github.hapjava.server.impl.HomekitServer
