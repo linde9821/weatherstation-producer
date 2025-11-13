@@ -1,7 +1,7 @@
 git pull
 
-sudo sys stop
+sudo systemctl stop homekit-sensor
 
 ./gradlew clean installDist
 
-sudo sys stop
+sudo systemctl start homekit-sensor
