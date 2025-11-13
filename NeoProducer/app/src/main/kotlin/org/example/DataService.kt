@@ -1,6 +1,7 @@
 package org.example
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +24,7 @@ class DataService(
     private val interval: Duration = 30.seconds
 ) : AutoCloseable {
 
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob() + CoroutineName("DataService"))
 
     private val logger = KotlinLogging.logger { }
     private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
@@ -50,8 +51,8 @@ class DataService(
     }
 
     override fun close() {
-        scope.cancel()
         updateChannel.close()
+        scope.cancel()
         runBlocking {
             scope.coroutineContext[Job]?.join()
         }

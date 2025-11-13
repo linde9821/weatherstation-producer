@@ -6,6 +6,7 @@ package org.example
 import io.github.hapjava.accessories.HomekitAccessory
 import io.github.hapjava.server.impl.HomekitServer
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
@@ -119,7 +120,7 @@ class App(
     }
 }
 
-fun main() = runBlocking {
+fun main() = runBlocking(Dispatchers.IO) {
     val logger = KotlinLogging.logger { }
     
     logger.info { "Starting HomeKit Temperature/Humidity Bridge" }
