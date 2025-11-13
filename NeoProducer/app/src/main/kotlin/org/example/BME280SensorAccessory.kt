@@ -2,17 +2,15 @@ package org.example
 
 import io.github.hapjava.characteristics.HomekitCharacteristicChangeCallback
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CompletableFuture
 import kotlin.math.abs
 
@@ -23,9 +21,18 @@ abstract class BME280SensorAccessory<T>(
     private val sensorName: String
 ) : AutoCloseable {
 
-    protected val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    companion object {
+        private val accessoryScope =
+            CoroutineScope(Dispatchers.Default + SupervisorJob() + CoroutineName("BME280SensorAccessory"))
+    }
+
+    protected val scope = accessoryScope
+
+    @Volatile
     protected var latestData = SensorData(0.0, 0.0, 0.0)
+    @Volatile
     protected var lastReadData = SensorData(0.0, 0.0, 0.0)
+    @Volatile
     protected var characteristicCallback: HomekitCharacteristicChangeCallback? = null
 
     protected val logger = KotlinLogging.logger { }
@@ -33,22 +40,20 @@ abstract class BME280SensorAccessory<T>(
     protected abstract fun extractValue(data: SensorData): Double
     protected abstract val changeThreshold: Double
 
-    init {
-        scope.launch {
-            try {
-                for (data in channel) {
-                    latestData = data
+    private val job = scope.launch {
+        try {
+            for (data in channel) {
+                latestData = data
 
-                    if (characteristicCallback != null &&
-                        abs(extractValue(lastReadData) - extractValue(latestData)) > changeThreshold
-                    ) {
-                        logger.info { "Call characteristicCallback for $label" }
-                        characteristicCallback?.changed()
-                    }
+                if (characteristicCallback != null &&
+                    abs(extractValue(lastReadData) - extractValue(latestData)) > changeThreshold
+                ) {
+                    logger.info { "Call characteristicCallback for $label" }
+                    characteristicCallback?.changed()
                 }
-            } catch (e: ClosedReceiveChannelException) {
-                logger.info { "Channel closed for $label" }
             }
+        } catch (_: ClosedReceiveChannelException) {
+            logger.info { "Channel closed for $label" }
         }
     }
 
@@ -94,10 +99,7 @@ abstract class BME280SensorAccessory<T>(
     }
 
     override fun close() {
-        scope.cancel()
-        runBlocking {
-            scope.coroutineContext[Job]?.join()
-        }
-        channel.close()
+        job.cancel()
+        characteristicCallback = null
     }
 }

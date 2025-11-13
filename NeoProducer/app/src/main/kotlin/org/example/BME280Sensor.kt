@@ -7,7 +7,7 @@ import com.pi4j.io.i2c.I2CProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class BME280Sensor(
-    private val address: Int = 0x77,
+    address: Int = 0x77,
     private val bus: Int = 1
 ) : AutoCloseable {
     private val pi4j = Pi4J.newAutoContext()
