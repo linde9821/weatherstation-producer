@@ -19,11 +19,10 @@ class App(
 ) {
 
     private val logger = KotlinLogging.logger { }
-
     private lateinit var server: HomekitServer
     private lateinit var dataService: DataService
     private val accessories = mutableListOf<HomekitAccessory>()
-    private val channel = Channel<SensorData>()
+    private val channel = Channel<SensorData>(capacity = Channel.CONFLATED)
 
     fun start() {
         logger.info { "Starting HomeKit Bridge initialization..." }
@@ -110,7 +109,9 @@ class App(
             logger.debug { "Closing data service" }
             dataService.close()
             logger.info { "Data service closed" }
-            
+
+            channel.close()
+
             logger.info { "HomeKit Bridge shutdown complete" }
         } catch (e: Exception) {
             logger.error(e) { "Error during shutdown" }
