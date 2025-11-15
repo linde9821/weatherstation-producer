@@ -14,7 +14,7 @@ class BME280HumidityAccessory(
     HumiditySensorAccessory {
 
     override fun extractValue(data: SensorData): Double = data.humidity
-    override val changeThreshold: Double = 0.2
+    override val changeThreshold: Double = 0.1
 
     override fun getCurrentRelativeHumidity(): CompletableFuture<Double> {
         logger.info { "Latest RelativeHumidity data requested" }

@@ -14,7 +14,7 @@ class BME280TemperatureAccessory(
     TemperatureSensorAccessory {
 
     override fun extractValue(data: SensorData): Double = data.temperature
-    override val changeThreshold: Double = 0.2
+    override val changeThreshold: Double = 0.1
 
     override fun getCurrentTemperature(): CompletableFuture<Double> {
         logger.info { "Latest temperature data requested" }
