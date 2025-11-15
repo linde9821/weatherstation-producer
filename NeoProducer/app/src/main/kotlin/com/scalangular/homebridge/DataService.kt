@@ -30,7 +30,6 @@ class DataService(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob() + CoroutineName("DataService"))
 
     private val logger = KotlinLogging.logger { }
-    private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
     fun start() {
         scope.launch {
@@ -38,7 +37,6 @@ class DataService(
                 val data = sensor.readSample()
 
                 val status = buildString {
-                    appendLine("Timestamp: ${formatter.format(data.timestamp)}")
                     appendLine("Temperature: ${"%.2f".format(data.temperature)}°C")
                     appendLine("Humidity: ${"%.2f".format(data.humidity)}%")
                     appendLine("Pressure: ${"%.2f".format(data.pressure)} Pa\n")

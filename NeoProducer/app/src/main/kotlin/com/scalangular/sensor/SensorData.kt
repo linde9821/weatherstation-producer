@@ -1,10 +1,14 @@
 package com.scalangular.sensor
 
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-data class SensorData(
+data class SensorData @OptIn(ExperimentalTime::class) constructor(
     val temperature: Double,
     val humidity: Double,
     val pressure: Double,
-    val timestamp: LocalDateTime = LocalDateTime.now()
+    val timestamp: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.UTC)
 )

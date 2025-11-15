@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.pi4j.plugin.linuxfs)
     implementation(libs.hap.java)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.kotlin.logging)
     implementation(libs.slf4j.simple)
 }
